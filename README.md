@@ -1,3 +1,3 @@
 Horreum = Private - Main - Child | Core Data Stack
 
-based on an ObjC version written by [@dlichtengger](@dlichtenegger).
+based on an ObjC version written by [@dlichtenegger](https://github.com/dlichtenegger).
