@@ -6,13 +6,13 @@
 import Foundation
 import CoreData
 
-class Horreum: NSObject {
+public class Horreum: NSObject {
     
     struct Static {
         static var instance: Horreum?
     }
 
-    class var instance: Horreum? {
+    public class var instance: Horreum? {
         get {
             return Static.instance
         }
@@ -21,11 +21,11 @@ class Horreum: NSObject {
         }
     }
 
-    class func create(modelURL: NSURL, storeURL: NSURL, storeType: String, options: HorreumStoreOptions) {
+    public class func create(modelURL: NSURL, storeURL: NSURL, storeType: String, options: HorreumStoreOptions) {
         instance = Horreum(modelURL: modelURL, storeURL: storeURL, storeType: storeType, options: options)
     }
 
-    class func destory() throws {
+    public class func destory() throws {
         try instance?.destroy()
         instance = nil
     }
@@ -35,7 +35,7 @@ class Horreum: NSObject {
     private let store: NSPersistentStore
 
     private let masterContext: NSManagedObjectContext
-    let mainContext: NSManagedObjectContext
+    public let mainContext: NSManagedObjectContext
 
     init?(modelURL: NSURL, storeURL: NSURL, storeType: String, options: HorreumStoreOptions) {
 
@@ -110,7 +110,7 @@ class Horreum: NSObject {
     }
 }
 
-struct HorreumStoreOptions {
+public struct HorreumStoreOptions {
     let migrateAutomatically: Bool
     let inferMappingModelAutomatically: Bool
     
