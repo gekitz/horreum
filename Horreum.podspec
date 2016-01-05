@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name = 'Horreum'
-  s.version = '0.1.4'
+  s.version = '0.1.5'
   s.license = 'MIT'
   s.summary = 'Private - Main - Child | Core Data Stack'
   s.homepage = 'https://github.com/gekitz/Horreum'
