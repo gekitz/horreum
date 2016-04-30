@@ -66,13 +66,13 @@ public class Horreum: NSObject {
         NSNotificationCenter.defaultCenter().removeObserver(self)
     }
     
-    func workerContext() -> NSManagedObjectContext {
+    public func workerContext() -> NSManagedObjectContext {
         let workerContext = NSManagedObjectContext(concurrencyType: .PrivateQueueConcurrencyType)
         workerContext.parentContext = mainContext
         return workerContext
     }
 
-    private func destroy() throws {
+    public func destroy() throws {
         try self.storeCoordinator.removePersistentStore(self.store)
 
         if let storeURL = store.URL {
@@ -114,12 +114,12 @@ public struct HorreumStoreOptions {
     let migrateAutomatically: Bool
     let inferMappingModelAutomatically: Bool
     
-    init(migrateAutomatically: Bool = true, inferMappingModelAutomatically: Bool = true) {
+    public init(migrateAutomatically: Bool = true, inferMappingModelAutomatically: Bool = true) {
         self.migrateAutomatically = migrateAutomatically
         self.inferMappingModelAutomatically = inferMappingModelAutomatically
     }
     
-    func optionsDictionary() -> [NSObject: AnyObject] {
+    public func optionsDictionary() -> [NSObject: AnyObject] {
         return [
             NSMigratePersistentStoresAutomaticallyOption: migrateAutomatically,
             NSInferMappingModelAutomaticallyOption: inferMappingModelAutomatically
