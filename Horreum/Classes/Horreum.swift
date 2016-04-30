@@ -59,7 +59,7 @@ public class Horreum: NSObject {
         
         super.init()
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "saveNotification:", name:NSManagedObjectContextDidSaveNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(self.saveNotification), name:NSManagedObjectContextDidSaveNotification, object: nil)
     }
     
     deinit {
