@@ -73,11 +73,16 @@ public class Horreum: NSObject {
     }
 
     public func destroy() throws {
-        try self.storeCoordinator.removePersistentStore(self.store)
-
+        try self.storeCoordinator.removePersistentStore(store)
+        
         if let storeURL = store.URL {
-            try NSFileManager().removeItemAtURL(storeURL)
+            do {
+                try NSFileManager().removeItemAtURL(storeURL)
+            } catch {
+                
+            }
         }
+        Horreum.instance = nil
     }
 
     func saveNotification(notification: NSNotification) {
@@ -88,7 +93,7 @@ public class Horreum: NSObject {
 
             let persistentStoreCoordinator = context.persistentStoreCoordinator
 
-            if let parentContext = context.parentContext where storeCoordinator != persistentStoreCoordinator {
+            if let parentContext = context.parentContext where storeCoordinator == persistentStoreCoordinator {
 
                 parentContext.performBlock {
                     
