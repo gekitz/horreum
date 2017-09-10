@@ -8,7 +8,6 @@
 
 import XCTest
 import CoreData
-
 @testable import Horreum
 
 class HorreumTests: XCTestCase {
@@ -31,10 +30,10 @@ class HorreumTests: XCTestCase {
         let mainContext = Horreum.instance!.mainContext
         let workerContext = Horreum.instance!.workerContext()
         
-        XCTAssert(mainContext.parentContext != nil)
-        XCTAssert(mainContext.concurrencyType == .MainQueueConcurrencyType)
-        XCTAssert(workerContext.parentContext == mainContext)
-        XCTAssert(workerContext.concurrencyType == .PrivateQueueConcurrencyType)
+        XCTAssert(mainContext.parent != nil)
+        XCTAssert(mainContext.concurrencyType == .mainQueueConcurrencyType)
+        XCTAssert(workerContext.parent == mainContext)
+        XCTAssert(workerContext.concurrencyType == .privateQueueConcurrencyType)
     }
     
     func testInsertInWorkerContext() {
@@ -45,9 +44,9 @@ class HorreumTests: XCTestCase {
         let name = "Foo"
         var entity: Entity? = nil
         
-        workerContext.performBlockAndWait { () -> Void in
+        workerContext.performAndWait { () -> Void in
             
-            entity = NSEntityDescription.insertNewObjectForEntityForName("Entity", inManagedObjectContext: workerContext) as? Entity
+            entity = NSEntityDescription.insertNewObject(forEntityName: "Entity", into: workerContext) as? Entity
             entity?.name = name
             
             try! workerContext.save()
@@ -55,8 +54,8 @@ class HorreumTests: XCTestCase {
         
         sleep(2)
         
-        let fetch = NSFetchRequest(entityName: "Entity")
-        let items = try! mainContext.executeFetchRequest(fetch) as! [Entity]
+        let fetch = NSFetchRequest<Entity>(entityName: "Entity")
+        let items = try! mainContext.fetch(fetch)
         
         XCTAssert(items.count == 1)
         XCTAssert(items[0].name == name)
@@ -67,8 +66,8 @@ extension Horreum {
     
     class func createForTesting() {
 
-        let modelURL = NSBundle.mainBundle().URLForResource("Horreum", withExtension: "momd")!
-        let storeURL = NSFileManager().URLsForDirectory(.DocumentationDirectory, inDomains: .UserDomainMask)[0]
+        let modelURL = Bundle.main.url(forResource: "Horreum", withExtension: "momd")!
+        let storeURL = FileManager().urls(for: .documentationDirectory, in: .userDomainMask)[0]
         let options = HorreumStoreOptions()
         
         Horreum.create(modelURL, storeURL: storeURL, storeType: NSInMemoryStoreType, options: options)

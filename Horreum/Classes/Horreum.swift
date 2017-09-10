@@ -6,13 +6,13 @@
 import Foundation
 import CoreData
 
-public class Horreum: NSObject {
+open class Horreum: NSObject {
     
     struct Static {
         static var instance: Horreum?
     }
 
-    public class var instance: Horreum? {
+    open class var instance: Horreum? {
         get {
             return Static.instance
         }
@@ -21,63 +21,63 @@ public class Horreum: NSObject {
         }
     }
 
-    public class func create(modelURL: NSURL, storeURL: NSURL, storeType: String, options: HorreumStoreOptions) {
+    open class func create(_ modelURL: URL, storeURL: URL, storeType: String, options: HorreumStoreOptions) {
         instance = Horreum(modelURL: modelURL, storeURL: storeURL, storeType: storeType, options: options)
     }
 
-    public class func destory() throws {
+    open class func destory() throws {
         try instance?.destroy()
         instance = nil
     }
 
-    private let model: NSManagedObjectModel
-    private let storeCoordinator: NSPersistentStoreCoordinator
-    private let store: NSPersistentStore
+    fileprivate let model: NSManagedObjectModel
+    fileprivate let storeCoordinator: NSPersistentStoreCoordinator
+    fileprivate let store: NSPersistentStore
 
-    private let masterContext: NSManagedObjectContext
-    public let mainContext: NSManagedObjectContext
+    fileprivate let masterContext: NSManagedObjectContext
+    open let mainContext: NSManagedObjectContext
 
-    init?(modelURL: NSURL, storeURL: NSURL, storeType: String, options: HorreumStoreOptions) {
+    init?(modelURL: URL, storeURL: URL, storeType: String, options: HorreumStoreOptions) {
 
         //this should be change as soon as Swift allows to have failable initialisers without
         //initialising all stored properties. For now this will simply crash if the file can't be found
         //at the given URL
         //http://stackoverflow.com/questions/26495586/best-practice-to-implement-a-failable-initializer-in-swift
-        model = NSManagedObjectModel(contentsOfURL: modelURL)!
+        model = NSManagedObjectModel(contentsOf: modelURL)!
 
         storeCoordinator = NSPersistentStoreCoordinator(managedObjectModel: model)
-        store = try! storeCoordinator.addPersistentStoreWithType(storeType, configuration: nil, URL: storeURL, options: options.optionsDictionary())
+        store = try! storeCoordinator.addPersistentStore(ofType: storeType, configurationName: nil, at: storeURL, options: options.optionsDictionary())
 
-        masterContext = NSManagedObjectContext(concurrencyType: .PrivateQueueConcurrencyType)
+        masterContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         masterContext.persistentStoreCoordinator = storeCoordinator
         masterContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
         masterContext.stalenessInterval = 0
 
-        mainContext = NSManagedObjectContext(concurrencyType: .MainQueueConcurrencyType)
-        mainContext.parentContext = masterContext
+        mainContext = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
+        mainContext.parent = masterContext
         mainContext.stalenessInterval = 0
         
         super.init()
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(self.saveNotification), name:NSManagedObjectContextDidSaveNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.saveNotification), name:NSNotification.Name.NSManagedObjectContextDidSave, object: nil)
     }
     
     deinit {
-        NSNotificationCenter.defaultCenter().removeObserver(self)
+        NotificationCenter.default.removeObserver(self)
     }
     
-    public func workerContext() -> NSManagedObjectContext {
-        let workerContext = NSManagedObjectContext(concurrencyType: .PrivateQueueConcurrencyType)
-        workerContext.parentContext = mainContext
+    open func workerContext() -> NSManagedObjectContext {
+        let workerContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        workerContext.parent = mainContext
         return workerContext
     }
 
-    public func destroy() throws {
-        try self.storeCoordinator.removePersistentStore(store)
+    open func destroy() throws {
+        try self.storeCoordinator.remove(store)
         
-        if let storeURL = store.URL {
+        if let storeURL = store.url {
             do {
-                try NSFileManager().removeItemAtURL(storeURL)
+                try FileManager().removeItem(at: storeURL)
             } catch {
                 
             }
@@ -85,17 +85,17 @@ public class Horreum: NSObject {
         Horreum.instance = nil
     }
 
-    func saveNotification(notification: NSNotification) {
+    @objc func saveNotification(_ notification: Notification) {
 
         let context  = notification.object as! NSManagedObjectContext?
 
-        if let context = context where context != masterContext {
+        if let context = context, context != masterContext {
 
             let persistentStoreCoordinator = context.persistentStoreCoordinator
 
-            if let parentContext = context.parentContext where storeCoordinator == persistentStoreCoordinator {
+            if let parentContext = context.parent, storeCoordinator == persistentStoreCoordinator {
 
-                parentContext.performBlock {
+                parentContext.perform {
                     
                     do {
                         
@@ -107,8 +107,8 @@ public class Horreum: NSObject {
                 }
             } else {
 
-                masterContext.performBlock {
-                    self.masterContext.mergeChangesFromContextDidSaveNotification(notification)
+                masterContext.perform {
+                    self.masterContext.mergeChanges(fromContextDidSave: notification)
                 }
             }
         }
@@ -124,7 +124,7 @@ public struct HorreumStoreOptions {
         self.inferMappingModelAutomatically = inferMappingModelAutomatically
     }
     
-    public func optionsDictionary() -> [NSObject: AnyObject] {
+    public func optionsDictionary() -> [AnyHashable: Any] {
         return [
             NSMigratePersistentStoresAutomaticallyOption: migrateAutomatically,
             NSInferMappingModelAutomaticallyOption: inferMappingModelAutomatically
