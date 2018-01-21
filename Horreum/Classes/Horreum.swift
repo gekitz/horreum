@@ -34,7 +34,7 @@ open class Horreum: NSObject {
     fileprivate let storeCoordinator: NSPersistentStoreCoordinator
     fileprivate let store: NSPersistentStore
 
-    fileprivate let masterContext: NSManagedObjectContext
+    open let masterContext: NSManagedObjectContext
     open let mainContext: NSManagedObjectContext
 
     init?(modelURL: URL, storeURL: URL, storeType: String, options: HorreumStoreOptions) {
@@ -55,6 +55,7 @@ open class Horreum: NSObject {
 
         mainContext = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
         mainContext.parent = masterContext
+        mainContext.automaticallyMergesChangesFromParent = true
         mainContext.stalenessInterval = 0
         
         super.init()
